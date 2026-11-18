@@ -1,0 +1,765 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>for Pia</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Caveat:wght@500;700&family=IM+Fell+English:ital@0;1&family=IM+Fell+English+SC&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#0b110d;
+    --bg2:#111a14;
+    --line:#24332a;
+    --ink:#e6e1d2;
+    --muted:#86917f;
+    --green:#7cc38b;
+    --green-deep:#3c7a4d;
+    --red:#b9504a;
+    --paper:#ebe3cc;
+    --paper-ink:#2c2a23;
+    --gold:#d8b45a;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;height:100%}
+  body{
+    background:var(--bg);
+    color:var(--ink);
+    font-family:"IM Fell English", Georgia, serif;
+    overflow-x:hidden;
+  }
+  /* faint grain so it doesn't look flat */
+  body::before{
+    content:"";position:fixed;inset:0;pointer-events:none;z-index:0;opacity:.07;
+    background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='160' height='160'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");
+  }
+  body::after{
+    content:"";position:fixed;inset:0;pointer-events:none;z-index:0;
+    background:radial-gradient(ellipse at 50% 35%, rgba(60,122,77,.16), transparent 60%);
+  }
+  .screen{position:relative;z-index:1;min-height:100vh}
+  .hidden{display:none !important}
+  button{font:inherit;color:inherit;cursor:pointer}
+  .hand{font-family:"Caveat", cursive}
+  .sc{font-family:"IM Fell English SC", Georgia, serif;letter-spacing:.04em}
+
+  /* ---------- lock screen ---------- */
+  #lock{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:40px 20px}
+  .sigil{width:74px;height:74px;margin-bottom:14px;opacity:.9}
+  #lock h1{font-weight:400;font-size:30px;margin:0 0 6px}
+  #lock .sub{color:var(--muted);font-style:italic;margin:0 0 26px}
+  .dots{display:flex;gap:16px;margin-bottom:30px}
+  .dot{width:14px;height:14px;border-radius:50%;border:1.5px solid var(--green);transition:background .15s}
+  .dot.on{background:var(--green)}
+  .shake{animation:shake .4s}
+  @keyframes shake{20%,60%{transform:translateX(-9px)}40%,80%{transform:translateX(9px)}}
+  .pad{display:grid;grid-template-columns:repeat(3,74px);gap:16px}
+  .key{
+    width:74px;height:74px;border-radius:50%;
+    background:transparent;border:1px solid var(--line);
+    font-size:28px;transition:background .12s, border-color .12s;
+  }
+  .key:hover{border-color:var(--green-deep);background:rgba(124,195,139,.06)}
+  .key:active{background:rgba(124,195,139,.18)}
+  .key.ghost{border:none;visibility:hidden}
+  .key.del{border:none;font-size:20px;color:var(--muted)}
+  #lock .hint{margin-top:28px;font-size:22px;color:var(--muted)}
+
+  /* ---------- main ---------- */
+  #main{display:grid;grid-template-columns:1fr minmax(440px,560px) 1fr;gap:28px;padding:42px 36px 60px;align-items:start;max-width:1320px;margin:0 auto}
+  .col{display:flex;flex-direction:column;gap:22px;padding-top:120px}
+  .col.left{align-items:flex-end}
+  .col.right{align-items:flex-start}
+  .game{
+    position:relative;width:200px;padding:18px 14px 14px;
+    background:var(--bg2);border:1px solid var(--line);border-radius:6px;
+    text-align:center;transition:transform .15s, border-color .15s;
+  }
+  .game:nth-child(odd){transform:rotate(-1.2deg)}
+  .game:nth-child(even){transform:rotate(1deg)}
+  .game:hover{transform:rotate(0) translateY(-3px);border-color:var(--green-deep)}
+  .game svg.icon{width:56px;height:56px;display:block;margin:0 auto 8px}
+  .game .name{font-family:"Caveat",cursive;font-size:25px;line-height:1}
+  .game .state{font-size:14px;color:var(--muted);margin-top:6px;font-style:italic}
+  .game.done{border-color:var(--green-deep)}
+  .game.done .state{color:var(--green);font-style:normal}
+
+  .center{text-align:center}
+  .center h1{font-weight:400;font-size:54px;margin:8px 0 2px;line-height:1}
+  .center h1 em{color:var(--green);font-style:italic}
+  .center .tag{color:var(--muted);font-style:italic;margin:0 0 26px}
+
+  .note{
+    position:relative;background:var(--paper);color:var(--paper-ink);
+    padding:26px 30px 22px;margin:0 auto;max-width:430px;text-align:left;
+    transform:rotate(-.8deg);border-radius:2px;
+    box-shadow:0 10px 30px rgba(0,0,0,.45);
+    background-image:repeating-linear-gradient(transparent 0 33px, rgba(60,80,120,.13) 33px 34px);
+    background-position:0 18px;
+  }
+  .note::before{ /* tape */
+    content:"";position:absolute;top:-12px;left:50%;width:96px;height:24px;margin-left:-48px;
+    background:rgba(214,206,170,.75);transform:rotate(2deg);
+  }
+  .note p{font-family:"Caveat",cursive;font-size:27px;line-height:34px;margin:0}
+  .note ol{list-style:none;padding:0;margin:8px 0 0}
+  .note li{font-family:"Caveat",cursive;font-size:25px;line-height:34px;display:flex;align-items:center;gap:10px}
+  .note li .box{width:17px;height:17px;border:1.6px solid var(--paper-ink);border-radius:2px;flex:none;position:relative;top:1px}
+  .note li.ok .txt{text-decoration:line-through;text-decoration-color:rgba(60,122,77,.8);text-decoration-thickness:2px}
+  .note li.ok .box::after{content:"";position:absolute;left:3px;top:-4px;width:6px;height:13px;border:solid var(--green-deep);border-width:0 3px 3px 0;transform:rotate(40deg)}
+  .note .sign{text-align:right;margin-top:6px;font-size:24px}
+
+  .keys{display:flex;justify-content:center;gap:12px;margin:34px 0 10px}
+  .slot{width:44px;height:44px;border:1px dashed var(--line);border-radius:50%;display:grid;place-items:center}
+  .slot svg{width:26px;height:26px;opacity:0;transform:scale(.4);transition:all .35s cubic-bezier(.3,1.6,.5,1)}
+  .slot.got{border-style:solid;border-color:var(--green-deep)}
+  .slot.got svg{opacity:1;transform:scale(1)}
+  .keycount{color:var(--muted);font-style:italic;font-size:15px}
+
+  .heartwrap{margin-top:34px;display:flex;flex-direction:column;align-items:center;gap:8px}
+  #bigHeart{background:none;border:none;padding:0;position:relative;width:150px;height:140px}
+  #bigHeart svg{width:150px;height:140px}
+  #bigHeart .lock{position:absolute;left:50%;top:56%;transform:translate(-50%,-50%);width:38px;height:44px}
+  #bigHeart.locked{cursor:not-allowed;filter:grayscale(.85) brightness(.6)}
+  #bigHeart.ready{animation:beat 1.2s infinite}
+  #bigHeart.ready .lock{display:none}
+  @keyframes beat{0%,100%{transform:scale(1)}15%{transform:scale(1.08)}30%{transform:scale(1)}45%{transform:scale(1.06)}}
+  .heartlabel{font-family:"Caveat",cursive;font-size:24px;color:var(--muted)}
+  .reset{margin-top:50px;font-size:13px;color:#4e5a51;background:none;border:none;text-decoration:underline}
+
+  /* ---------- modal ---------- */
+  .overlay{position:fixed;inset:0;z-index:10;background:rgba(5,8,6,.82);display:flex;align-items:center;justify-content:center;padding:20px}
+  .panel{position:relative;background:var(--bg2);border:1px solid var(--line);border-radius:8px;padding:24px 26px 26px;width:min(720px,96vw)}
+  .panel h2{font-weight:400;margin:0 0 4px;font-size:30px}
+  .panel .how{margin:0 0 16px;color:var(--muted);font-style:italic}
+  .x{position:absolute;right:14px;top:10px;background:none;border:none;font-size:28px;color:var(--muted)}
+  .x:hover{color:var(--ink)}
+  .hud{display:flex;justify-content:space-between;font-family:"Caveat",cursive;font-size:24px;margin-bottom:8px;color:var(--ink)}
+  .stage{position:relative;width:100%;height:420px;border:1px solid var(--line);border-radius:6px;overflow:hidden;background:#0d1510}
+  .btn{background:var(--green-deep);border:none;border-radius:4px;padding:10px 22px;font-size:18px;color:#f2efe4}
+  .btn:hover{background:#468d59}
+  .btn.ghost{background:none;border:1px solid var(--line);color:var(--muted)}
+  .startcover{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;background:rgba(13,21,16,.88);z-index:5;text-align:center;padding:20px}
+  .startcover .big{font-family:"Caveat",cursive;font-size:34px}
+  .win{display:flex;flex-direction:column;align-items:center;gap:12px;padding:30px 0 10px;text-align:center}
+  .win svg{width:70px;height:70px;animation:pop .5s cubic-bezier(.3,1.6,.5,1)}
+  .win .big{font-family:"Caveat",cursive;font-size:38px}
+  @keyframes pop{from{transform:scale(.2) rotate(-30deg);opacity:0}}
+
+  /* memory */
+  .mem{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;max-width:470px;margin:0 auto}
+  .card{aspect-ratio:1;perspective:600px;background:none;border:none;padding:0}
+  .card .in{position:relative;width:100%;height:100%;transition:transform .4s;transform-style:preserve-3d}
+  .card.flip .in,.card.match .in{transform:rotateY(180deg)}
+  .card .f,.card .b{position:absolute;inset:0;border-radius:6px;backface-visibility:hidden;display:grid;place-items:center}
+  .card .b{background:#16241b;border:1px solid var(--line)}
+  .card .b span{font-size:30px;color:#2a4433}
+  .card .f{background:var(--paper);transform:rotateY(180deg)}
+  .card .f svg{width:78%;height:78%}
+  .card.match .f{box-shadow:0 0 0 2px var(--green) inset}
+
+  /* find the demon */
+  .crowd{position:absolute;inset:0}
+  .crowd .who{position:absolute;background:none;border:none;padding:0}
+  .crowd .who svg{width:100%;height:100%;display:block}
+
+  /* slide puzzle */
+  .puzzle{position:relative;width:360px;height:360px;margin:0 auto;border:1px solid var(--line);background:#0d1510}
+  .tile{position:absolute;width:120px;height:120px;background-image:url("pia-dog.jpg");background-size:360px 360px;border:1px solid var(--bg);transition:left .15s, top .15s;cursor:pointer}
+  .peekimg{position:absolute;inset:0;background:url("pia-dog.jpg") center/cover;opacity:0;pointer-events:none;transition:opacity .2s;z-index:3}
+  .puzzle.peek .peekimg{opacity:1}
+
+  canvas{display:block;width:100%;height:100%}
+
+  /* final */
+  #final .panel{width:min(760px,96vw);height:440px;overflow:hidden;text-align:center}
+  #final h2{font-size:44px;margin-top:40px}
+  #yes,#no{position:absolute;border:none;border-radius:6px;font-size:22px;padding:12px 30px;transition:transform .2s}
+  #yes{background:var(--green-deep);color:#f4f1e6;left:30%;top:58%;transform-origin:center}
+  #no{background:#2a2f2b;color:var(--muted);left:60%;top:58%;transition:left .18s, top .18s}
+  .yay{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;background:var(--bg2);z-index:4}
+  .yay .big{font-family:"Caveat",cursive;font-size:60px;color:var(--green);line-height:1}
+  .yay p{font-size:22px;margin:0;max-width:520px}
+  .yay .sig{font-family:"Caveat",cursive;font-size:30px;color:var(--muted)}
+  .fall{position:fixed;top:-40px;z-index:30;pointer-events:none;animation:fall linear forwards}
+  @keyframes fall{to{transform:translateY(110vh) rotate(var(--r))}}
+
+  @media (max-width:1050px){
+    #main{grid-template-columns:1fr;}
+    .col{padding-top:0;flex-direction:row;flex-wrap:wrap;justify-content:center;align-items:center}
+    .col.left{order:2}.col.right{order:3}
+  }
+</style>
+</head>
+<body>
+
+<!-- ============ LOCK ============ -->
+<section id="lock" class="screen">
+  <svg class="sigil" viewBox="0 0 80 80" fill="none" stroke="#7cc38b" stroke-width="2" stroke-linecap="round">
+    <path d="M22 30 C16 18 18 8 26 4 C24 14 28 22 33 26"/>
+    <path d="M58 30 C64 18 62 8 54 4 C56 14 52 22 47 26"/>
+    <path d="M40 72 C22 60 14 48 18 38 C22 30 32 30 40 40 C48 30 58 30 62 38 C66 48 58 60 40 72Z"/>
+  </svg>
+  <h1>Hello, stranger.</h1>
+  <p class="sub">Only one person knows the code.</p>
+  <div class="dots" id="dots"><span class="dot"></span><span class="dot"></span><span class="dot"></span><span class="dot"></span></div>
+  <div class="pad" id="pad"></div>
+  <div class="hint hand">hint: the day you showed up in this world</div>
+</section>
+
+<!-- ============ MAIN ============ -->
+<section id="main" class="screen hidden">
+  <div class="col left" id="leftCol"></div>
+
+  <div class="center">
+    <h1>Welcome, <em>Pia</em></h1>
+    <p class="tag">a small trial, prepared just for you</p>
+
+    <div class="note">
+      <p>There are a few tasks for you. Hopefully you succeed&nbsp;:)</p>
+      <ol id="taskList"></ol>
+      <div class="sign hand">— Your demon 鬼</div>
+    </div>
+
+    <div class="keys" id="keys"></div>
+    <div class="keycount" id="keycount">0 of 6 keys</div>
+
+    <div class="heartwrap">
+      <button id="bigHeart" class="locked" aria-label="the heart">
+        <svg viewBox="0 0 150 140"><path d="M75 132 C30 100 6 74 8 46 C10 22 28 8 48 8 C60 8 70 15 75 25 C80 15 90 8 102 8 C122 8 140 22 142 46 C144 74 120 100 75 132Z" fill="#3c7a4d" stroke="#7cc38b" stroke-width="2.5"/></svg>
+        <svg class="lock" viewBox="0 0 38 44" fill="none" stroke="#e6e1d2" stroke-width="2.5"><path d="M10 20 V13 a9 9 0 0 1 18 0 V20"/><rect x="5" y="20" width="28" height="20" rx="3" fill="#111a14"/><circle cx="19" cy="30" r="2.5" fill="#e6e1d2"/></svg>
+      </button>
+      <div class="heartlabel" id="heartLabel">locked — six keys needed</div>
+    </div>
+
+    <button class="reset" id="resetBtn">start over</button>
+  </div>
+
+  <div class="col right" id="rightCol"></div>
+</section>
+
+<!-- ============ GAME MODAL ============ -->
+<div class="overlay hidden" id="modal">
+  <div class="panel">
+    <button class="x" id="closeModal" aria-label="close">×</button>
+    <h2 id="gTitle"></h2>
+    <p class="how" id="gHow"></p>
+    <div id="gBody"></div>
+  </div>
+</div>
+
+<!-- ============ FINAL ============ -->
+<div class="overlay hidden" id="final">
+  <div class="panel" id="finalPanel">
+    <h2>Would you be mine, Pia?</h2>
+    <p class="how" style="font-size:18px">choose wisely</p>
+    <button id="yes">Yes</button>
+    <button id="no">No</button>
+  </div>
+</div>
+
+<script>
+(() => {
+  "use strict";
+  const CODE = "2607";
+  const $ = (s, r = document) => r.querySelector(s);
+
+  /* ---------------- little drawings ---------------- */
+  const keySVG = (c = "#d8b45a") =>
+    `<svg viewBox="0 0 32 32" fill="none" stroke="${c}" stroke-width="2.4" stroke-linecap="round"><circle cx="10" cy="11" r="6"/><path d="M14.5 15 L27 27.5 M22 22.5 l3-3 M25.5 26 l2.5-2.5"/></svg>`;
+
+  const heartPath = "M0,10 C-12,2 -14,-6 -8,-10 C-4,-12.5 -1,-10.5 0,-7 C1,-10.5 4,-12.5 8,-10 C14,-6 12,2 0,10Z";
+
+  // creatures for memory + find-the-demon
+  function creature(o) {
+    const { body = "#7cc38b", demon = true, horns = "curl", extra = "" , blush = true, wings = false} = o;
+    let top = "";
+    if (demon) {
+      if (horns === "curl") top = `<path d="M30 30 C22 22 22 12 30 8 C30 16 34 22 38 24" fill="#2c2a23"/><path d="M70 30 C78 22 78 12 70 8 C70 16 66 22 62 24" fill="#2c2a23"/>`;
+      else if (horns === "straight") top = `<path d="M32 28 L26 6 L42 22Z" fill="#2c2a23"/><path d="M68 28 L74 6 L58 22Z" fill="#2c2a23"/>`;
+      else if (horns === "tiny") top = `<path d="M36 24 L33 14 L44 21Z" fill="#2c2a23"/><path d="M64 24 L67 14 L56 21Z" fill="#2c2a23"/>`;
+      else top = `<path d="M30 28 C20 26 14 18 16 8 C22 16 30 18 38 22" fill="#2c2a23"/><path d="M70 28 C80 26 86 18 84 8 C78 16 70 18 62 22" fill="#2c2a23"/>`;
+    } else {
+      top = `<ellipse cx="50" cy="12" rx="17" ry="5" fill="none" stroke="#d8b45a" stroke-width="3.5"/>
+             <path d="M20 58 C4 52 2 36 10 30 C16 40 22 44 26 46Z" fill="#fff" stroke="#c9c2ad" stroke-width="1.5"/>
+             <path d="M80 58 C96 52 98 36 90 30 C84 40 78 44 74 46Z" fill="#fff" stroke="#c9c2ad" stroke-width="1.5"/>`;
+    }
+    if (demon && wings) top += `<path d="M20 58 C4 52 2 36 10 30 C16 40 22 44 26 46Z" fill="#fff" stroke="#c9c2ad" stroke-width="1.5"/><path d="M80 58 C96 52 98 36 90 30 C84 40 78 44 74 46Z" fill="#fff" stroke="#c9c2ad" stroke-width="1.5"/>`;
+    const tail = demon && !wings ? `<path d="M70 84 C86 88 90 76 84 70 l6-2 -4 8" fill="none" stroke="#2c2a23" stroke-width="2.5" stroke-linecap="round"/>` : "";
+    return `<svg viewBox="0 0 100 100">${tail}${top}
+      <path d="M50 90 C26 90 20 74 22 56 C24 36 36 26 50 26 C64 26 76 36 78 56 C80 74 74 90 50 90Z" fill="${body}" stroke="#2c2a23" stroke-width="2.5"/>
+      <circle cx="41" cy="54" r="3.4" fill="#2c2a23"/><circle cx="59" cy="54" r="3.4" fill="#2c2a23"/>
+      ${blush ? `<ellipse cx="35" cy="63" rx="4.5" ry="2.6" fill="#e89a8f" opacity=".7"/><ellipse cx="65" cy="63" rx="4.5" ry="2.6" fill="#e89a8f" opacity=".7"/>` : ""}
+      ${extra || `<path d="M44 66 Q50 71 56 66" fill="none" stroke="#2c2a23" stroke-width="2.4" stroke-linecap="round"/>`}
+    </svg>`;
+  }
+  const CREATURES = [
+    creature({ body: "#7cc38b", horns: "curl" }),
+    creature({ body: "#c0574f", horns: "straight", extra: `<path d="M43 65 Q50 72 57 65" fill="#2c2a23"/><path d="M46 66 l2 4 2-4" fill="#fff"/>` }),
+    creature({ body: "#4d6b58", horns: "tiny", extra: `<path d="M45 67 h10" stroke="#2c2a23" stroke-width="2.4" stroke-linecap="round"/>` }),
+    creature({ body: "#8a6aa8", horns: "wide", extra: `<circle cx="50" cy="67" r="3.5" fill="#2c2a23"/>` }),
+    creature({ body: "#fbf8ef", demon: false }),
+    creature({ body: "#cfe8d3", demon: false, extra: `<path d="M44 65 Q50 72 56 65" fill="none" stroke="#2c2a23" stroke-width="2.4" stroke-linecap="round"/><path d="M38 50 l6 2 M62 50 l-6 2" stroke="#2c2a23" stroke-width="2"/>` }),
+    creature({ body: "#f3dfb5", demon: false, blush: false, extra: `<path d="M44 66 Q50 70 56 66" fill="none" stroke="#2c2a23" stroke-width="2.4" stroke-linecap="round"/>` }),
+    creature({ body: "#c9dcef", demon: false, extra: `<ellipse cx="50" cy="67" rx="3" ry="4" fill="#2c2a23"/>` }),
+  ];
+
+  const ICONS = {
+    memory: `<svg class="icon" viewBox="0 0 56 56" fill="none" stroke="#7cc38b" stroke-width="2"><rect x="8" y="10" width="22" height="30" rx="3" transform="rotate(-10 19 25)"/><rect x="26" y="14" width="22" height="30" rx="3" transform="rotate(8 37 29)" fill="#111a14"/><path d="M37 24 c-3-4-8-1-5 3 l5 5 5-5 c3-4-2-7-5-3z" fill="#7cc38b" stroke="none" transform="rotate(8 37 29)"/></svg>`,
+    find: `<svg class="icon" viewBox="0 0 56 56" fill="none" stroke="#7cc38b" stroke-width="2" stroke-linecap="round"><circle cx="24" cy="24" r="13"/><path d="M33.5 33.5 L47 47"/><path d="M18 20 l-2-6 5 4 M30 20 l2-6 -5 4"/><circle cx="20.5" cy="25" r="1.4" fill="#7cc38b"/><circle cx="27.5" cy="25" r="1.4" fill="#7cc38b"/></svg>`,
+    puzzle: `<svg class="icon" viewBox="0 0 56 56" fill="none" stroke="#7cc38b" stroke-width="2"><rect x="8" y="8" width="12" height="12" rx="1.5"/><rect x="22" y="8" width="12" height="12" rx="1.5"/><rect x="36" y="8" width="12" height="12" rx="1.5"/><rect x="8" y="22" width="12" height="12" rx="1.5"/><rect x="22" y="22" width="12" height="12" rx="1.5" stroke-dasharray="3 3"/><rect x="36" y="22" width="12" height="12" rx="1.5"/><rect x="8" y="36" width="12" height="12" rx="1.5"/><rect x="22" y="36" width="12" height="12" rx="1.5"/></svg>`,
+    aim: `<svg class="icon" viewBox="0 0 56 56" fill="none" stroke="#7cc38b" stroke-width="2"><circle cx="28" cy="28" r="17"/><circle cx="28" cy="28" r="9"/><path d="M28 4 v10 M28 42 v10 M4 28 h10 M42 28 h10" stroke-linecap="round"/><circle cx="28" cy="28" r="2.2" fill="#7cc38b"/></svg>`,
+    catch: `<svg class="icon" viewBox="0 0 56 56" fill="none" stroke="#7cc38b" stroke-width="2" stroke-linecap="round"><path d="M12 36 h32 l-4 12 h-24z"/><path d="M28 24 c-3-5-10-2-7 3 l7 6 7-6 c3-5-4-8-7-3z" fill="#7cc38b" stroke="none"/><path d="M18 10 c-2-3-6-1-4 2 l4 3.5 4-3.5 c2-3-2-5-4-2z" fill="#3c7a4d" stroke="none"/><path d="M40 6 c-2-3-6-1-4 2 l4 3.5 4-3.5 c2-3-2-5-4-2z" fill="#3c7a4d" stroke="none"/></svg>`,
+    stars: `<svg class="icon" viewBox="0 0 56 56" fill="none" stroke="#7cc38b" stroke-width="1.6"><path d="M28 46 L12 30 L14 16 L24 13 L28 20 L32 13 L42 16 L44 30Z" stroke-dasharray="3 3"/><g fill="#e6e1d2" stroke="none"><circle cx="28" cy="46" r="2.4"/><circle cx="12" cy="30" r="2.4"/><circle cx="14" cy="16" r="2.4"/><circle cx="24" cy="13" r="2.4"/><circle cx="28" cy="20" r="2.4"/><circle cx="32" cy="13" r="2.4"/><circle cx="42" cy="16" r="2.4"/><circle cx="44" cy="30" r="2.4"/></g></svg>`,
+  };
+
+  const GAMES = [
+    { id: "memory", side: "left", name: "Memory", task: "Find every pair of little creatures", how: "Flip two cards at a time. Match all the demons and angels." },
+    { id: "find", side: "left", name: "Find the demon", task: "Spot the demon hiding among angels", how: "One little demon is hiding in the crowd. Click him. Three rounds." },
+    { id: "puzzle", side: "left", name: "Slide puzzle", task: "Put the good boy back together", how: "Click a tile next to the empty space to slide it. Hold “peek” to see the picture." },
+    { id: "aim", side: "right", name: "Aim trainer", task: "Hit 15 targets before time runs out", how: "Click the 鬼 targets as fast as you can. 15 hits in 30 seconds." },
+    { id: "catch", side: "right", name: "Catch the hearts", task: "Catch 15 green hearts", how: "Move the basket with your mouse. Catch the green hearts, avoid the broken ones. 3 lives." },
+    { id: "stars", side: "right", name: "Connect the stars", task: "Connect the stars to see what they make", how: "Click the stars in order, starting from 1." },
+  ];
+
+  /* ---------------- progress ---------------- */
+  let done = new Set();
+  try { done = new Set(JSON.parse(localStorage.getItem("pia-keys") || "[]")); } catch (e) {}
+  const save = () => { try { localStorage.setItem("pia-keys", JSON.stringify([...done])); } catch (e) {} };
+
+  /* ---------------- lock screen ---------------- */
+  let entered = "";
+  const pad = $("#pad");
+  ["1","2","3","4","5","6","7","8","9","","0","del"].forEach(k => {
+    const b = document.createElement("button");
+    b.className = "key" + (k === "" ? " ghost" : k === "del" ? " del" : "");
+    b.textContent = k === "del" ? "⌫" : k;
+    if (k !== "") b.addEventListener("click", () => press(k));
+    pad.appendChild(b);
+  });
+  document.addEventListener("keydown", e => {
+    if ($("#lock").classList.contains("hidden")) return;
+    if (/^\d$/.test(e.key)) press(e.key);
+    else if (e.key === "Backspace") press("del");
+  });
+  function press(k) {
+    if (k === "del") entered = entered.slice(0, -1);
+    else if (entered.length < 4) entered += k;
+    paintDots();
+    if (entered.length === 4) setTimeout(check, 180);
+  }
+  function paintDots() {
+    [...$("#dots").children].forEach((d, i) => d.classList.toggle("on", i < entered.length));
+  }
+  function check() {
+    if (entered === CODE) {
+      $("#lock").classList.add("hidden");
+      $("#main").classList.remove("hidden");
+      window.scrollTo(0, 0);
+    } else {
+      const d = $("#dots");
+      d.classList.remove("shake"); void d.offsetWidth; d.classList.add("shake");
+      entered = ""; setTimeout(paintDots, 250);
+    }
+  }
+
+  /* ---------------- main page ---------------- */
+  function buildMain() {
+    const L = $("#leftCol"), R = $("#rightCol"), T = $("#taskList"), K = $("#keys");
+    GAMES.forEach((g, i) => {
+      const b = document.createElement("button");
+      b.className = "game"; b.id = "g-" + g.id;
+      b.innerHTML = `${ICONS[g.id]}<div class="name">${g.name}</div><div class="state"></div>`;
+      b.addEventListener("click", () => openGame(g));
+      (g.side === "left" ? L : R).appendChild(b);
+      const li = document.createElement("li");
+      li.id = "t-" + g.id;
+      li.innerHTML = `<span class="box"></span><span class="txt">${g.task}</span>`;
+      T.appendChild(li);
+      const s = document.createElement("div");
+      s.className = "slot"; s.innerHTML = keySVG();
+      K.appendChild(s);
+    });
+    refresh();
+  }
+  function refresh() {
+    GAMES.forEach(g => {
+      const ok = done.has(g.id);
+      $("#g-" + g.id).classList.toggle("done", ok);
+      $("#g-" + g.id + " .state").textContent = ok ? "key earned" : "not yet";
+      $("#t-" + g.id).classList.toggle("ok", ok);
+    });
+    [...$("#keys").children].forEach((s, i) => s.classList.toggle("got", i < done.size));
+    $("#keycount").textContent = `${done.size} of 6 keys`;
+    const h = $("#bigHeart");
+    const ready = done.size >= 6;
+    h.classList.toggle("locked", !ready);
+    h.classList.toggle("ready", ready);
+    $("#heartLabel").textContent = ready ? "open me" : `locked — ${6 - done.size} more key${6 - done.size === 1 ? "" : "s"}`;
+  }
+  $("#resetBtn").addEventListener("click", () => { done.clear(); save(); refresh(); });
+
+  /* ---------------- modal + games ---------------- */
+  let cleanup = null;
+  function openGame(g) {
+    $("#gTitle").textContent = g.name;
+    $("#gHow").textContent = g.how;
+    const body = $("#gBody"); body.innerHTML = "";
+    $("#modal").classList.remove("hidden");
+    cleanup = GAME_FN[g.id](body, () => winGame(g, body)) || null;
+  }
+  function closeGame() {
+    if (cleanup) { try { cleanup(); } catch (e) {} cleanup = null; }
+    $("#modal").classList.add("hidden");
+    $("#gBody").innerHTML = "";
+  }
+  $("#closeModal").addEventListener("click", closeGame);
+  $("#modal").addEventListener("click", e => { if (e.target.id === "modal") closeGame(); });
+  document.addEventListener("keydown", e => { if (e.key === "Escape" && !$("#modal").classList.contains("hidden")) closeGame(); });
+
+  const WIN_LINES = ["Knew you could do it.", "Too easy for you.", "Another one. Look at you.", "Clean.", "That's my girl.", "Okay, show-off."];
+  function winGame(g, body) {
+    if (cleanup) { try { cleanup(); } catch (e) {} cleanup = null; }
+    const first = !done.has(g.id);
+    done.add(g.id); save(); refresh();
+    body.innerHTML = `<div class="win">${keySVG()}<div class="big">${first ? "Key earned!" : "Done again!"}</div>
+      <div style="color:var(--muted);font-style:italic">${WIN_LINES[Math.floor(Math.random() * WIN_LINES.length)]}</div>
+      <button class="btn" id="backBtn">Back</button></div>`;
+    $("#backBtn").addEventListener("click", closeGame);
+  }
+
+  const shuffle = a => { for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; };
+  const rand = (a, b) => a + Math.random() * (b - a);
+
+  function cover(stage, title, sub, btn, onGo) {
+    const c = document.createElement("div");
+    c.className = "startcover";
+    c.innerHTML = `<div class="big">${title}</div>${sub ? `<div style="color:var(--muted);font-style:italic">${sub}</div>` : ""}<button class="btn">${btn}</button>`;
+    c.querySelector("button").addEventListener("click", () => { c.remove(); onGo(); });
+    stage.appendChild(c);
+  }
+
+  const GAME_FN = {
+    /* ---- memory ---- */
+    memory(body, win) {
+      const grid = document.createElement("div"); grid.className = "mem";
+      body.appendChild(grid);
+      const deck = shuffle([...CREATURES.keys(), ...CREATURES.keys()]);
+      let open = [], matched = 0, busy = false;
+      deck.forEach(id => {
+        const c = document.createElement("button");
+        c.className = "card"; c.dataset.id = id;
+        c.innerHTML = `<div class="in"><div class="b"><span>✦</span></div><div class="f">${CREATURES[id]}</div></div>`;
+        c.addEventListener("click", () => {
+          if (busy || c.classList.contains("flip") || c.classList.contains("match")) return;
+          c.classList.add("flip"); open.push(c);
+          if (open.length === 2) {
+            busy = true;
+            const [a, b] = open;
+            if (a.dataset.id === b.dataset.id) {
+              setTimeout(() => { a.classList.add("match"); b.classList.add("match"); open = []; busy = false; matched++;
+                if (matched === CREATURES.length) setTimeout(win, 600); }, 350);
+            } else {
+              setTimeout(() => { a.classList.remove("flip"); b.classList.remove("flip"); open = []; busy = false; }, 850);
+            }
+          }
+        });
+        grid.appendChild(c);
+      });
+    },
+
+    /* ---- find the demon ---- */
+    find(body, win) {
+      const hud = document.createElement("div"); hud.className = "hud";
+      hud.innerHTML = `<span id="fRound">round 1 of 3</span><span id="fMsg"></span>`;
+      const stage = document.createElement("div"); stage.className = "stage";
+      body.append(hud, stage);
+      const rounds = [{ n: 38, s: 44 }, { n: 62, s: 36 }, { n: 90, s: 30 }];
+      const angelBodies = ["#fbf8ef", "#f3dfb5", "#cfe8d3", "#c9dcef"];
+      let r = 0;
+      function round() {
+        stage.innerHTML = "";
+        $("#fRound").textContent = `round ${r + 1} of 3`;
+        $("#fMsg").textContent = "";
+        const crowd = document.createElement("div"); crowd.className = "crowd"; stage.appendChild(crowd);
+        const W = stage.clientWidth, H = stage.clientHeight, { n, s } = rounds[r];
+        const spots = [];
+        const tryPlace = () => {
+          for (let k = 0; k < 60; k++) {
+            const x = rand(4, W - s - 4), y = rand(4, H - s - 4);
+            if (spots.every(p => Math.hypot(p.x - x, p.y - y) > s * 0.82)) { spots.push({ x, y }); return { x, y }; }
+          }
+          const p = { x: rand(4, W - s - 4), y: rand(4, H - s - 4) }; spots.push(p); return p;
+        };
+        const demonIdx = Math.floor(Math.random() * n);
+        for (let i = 0; i < n; i++) {
+          const p = tryPlace();
+          const isDemon = i === demonIdx;
+          const b = document.createElement("button"); b.className = "who";
+          b.style.cssText = `left:${p.x}px;top:${p.y}px;width:${s}px;height:${s}px;transform:rotate(${rand(-14, 14)}deg)`;
+          // the demon wears a halo-coloured body so it blends in; only the horns + tail give it away
+          b.innerHTML = isDemon
+            ? creature({ body: angelBodies[i % 4], horns: "tiny", wings: true })
+            : creature({ body: angelBodies[i % 4], demon: false });
+          b.addEventListener("click", () => {
+            if (isDemon) {
+              r++;
+              if (r >= 3) win(); else { $("#fMsg").textContent = "found him!"; setTimeout(round, 650); }
+            } else {
+              $("#fMsg").textContent = "that's an angel :(";
+              b.animate([{ transform: b.style.transform + " translateX(-4px)" }, { transform: b.style.transform + " translateX(4px)" }, { transform: b.style.transform }], { duration: 250 });
+            }
+          });
+          crowd.appendChild(b);
+        }
+      }
+      requestAnimationFrame(round);
+    },
+
+    /* ---- slide puzzle ---- */
+    puzzle(body, win) {
+      const wrap = document.createElement("div"); wrap.className = "puzzle";
+      wrap.innerHTML = `<div class="peekimg"></div>`;
+      const ctl = document.createElement("div");
+      ctl.style.cssText = "display:flex;justify-content:center;gap:12px;margin-top:14px";
+      ctl.innerHTML = `<button class="btn ghost" id="peek">hold to peek</button><span class="hand" id="moves" style="font-size:24px;align-self:center;color:var(--muted)">0 moves</span>`;
+      body.append(wrap, ctl);
+      const N = 3, S = 120;
+      let board = [...Array(N * N).keys()]; // value 8 = empty
+      let empty = 8, moves = 0;
+      const nbrs = i => [i - N, i + N, i % N ? i - 1 : -1, (i + 1) % N ? i + 1 : -1].filter(j => j >= 0 && j < N * N);
+      for (let k = 0; k < 200; k++) {
+        const opts = nbrs(empty); const j = opts[Math.floor(Math.random() * opts.length)];
+        [board[empty], board[j]] = [board[j], board[empty]]; empty = j;
+      }
+      if (board.every((v, i) => v === i)) { const j = nbrs(empty)[0]; [board[empty], board[j]] = [board[j], board[empty]]; empty = j; }
+      const tiles = {};
+      for (let v = 0; v < N * N - 1; v++) {
+        const t = document.createElement("div"); t.className = "tile";
+        t.style.backgroundPosition = `${-(v % N) * S}px ${-Math.floor(v / N) * S}px`;
+        t.addEventListener("click", () => {
+          const pos = board.indexOf(v);
+          if (!nbrs(empty).includes(pos)) return;
+          [board[empty], board[pos]] = [board[pos], board[empty]]; empty = pos;
+          moves++; $("#moves").textContent = `${moves} move${moves === 1 ? "" : "s"}`;
+          place();
+          if (board.every((x, i) => x === i)) {
+            const last = document.createElement("div"); last.className = "tile";
+            last.style.cssText = `left:${2 * S}px;top:${2 * S}px;background-position:${-2 * S}px ${-2 * S}px;opacity:0;transition:opacity .4s`;
+            wrap.appendChild(last); requestAnimationFrame(() => last.style.opacity = 1);
+            setTimeout(win, 900);
+          }
+        });
+        tiles[v] = t; wrap.appendChild(t);
+      }
+      function place() { board.forEach((v, i) => { if (tiles[v]) { tiles[v].style.left = (i % N) * S + "px"; tiles[v].style.top = Math.floor(i / N) * S + "px"; } }); }
+      place();
+      const pk = $("#peek");
+      const on = () => wrap.classList.add("peek"), off = () => wrap.classList.remove("peek");
+      pk.addEventListener("mousedown", on); pk.addEventListener("mouseup", off); pk.addEventListener("mouseleave", off);
+      pk.addEventListener("touchstart", on, { passive: true }); pk.addEventListener("touchend", off);
+    },
+
+    /* ---- aim trainer ---- */
+    aim(body, win) {
+      const hud = document.createElement("div"); hud.className = "hud";
+      hud.innerHTML = `<span id="aHits">0 / 15</span><span id="aTime">30.0s</span>`;
+      const stage = document.createElement("div"); stage.className = "stage"; stage.style.cursor = "crosshair";
+      body.append(hud, stage);
+      let hits = 0, t0 = 0, raf = 0, moveTimer = 0, target = null, running = false;
+      const GOAL = 15, TIME = 30;
+      function spawn() {
+        if (target) target.remove();
+        clearTimeout(moveTimer);
+        const s = Math.max(34, 62 - hits * 2);
+        target = document.createElement("button");
+        target.style.cssText = `position:absolute;width:${s}px;height:${s}px;border-radius:50%;border:2px solid #7cc38b;background:radial-gradient(circle,#1d3a26 55%,#13261a);color:#e6e1d2;font-size:${s * 0.48}px;line-height:1;padding:0;left:${rand(6, stage.clientWidth - s - 6)}px;top:${rand(6, stage.clientHeight - s - 6)}px;font-family:serif;cursor:crosshair;transition:transform .08s`;
+        target.textContent = "鬼";
+        target.addEventListener("mousedown", e => {
+          e.stopPropagation(); if (!running) return;
+          hits++; $("#aHits").textContent = `${hits} / ${GOAL}`;
+          if (hits >= GOAL) { stop(); win(); } else spawn();
+        });
+        stage.appendChild(target);
+        moveTimer = setTimeout(spawn, Math.max(700, 1400 - hits * 40));
+      }
+      function tick() {
+        const left = TIME - (performance.now() - t0) / 1000;
+        $("#aTime").textContent = Math.max(0, left).toFixed(1) + "s";
+        if (left <= 0) { stop(); if (target) target.remove(); cover(stage, "So close.", `${hits} of ${GOAL} — again?`, "Try again", start); return; }
+        raf = requestAnimationFrame(tick);
+      }
+      function start() { hits = 0; $("#aHits").textContent = `0 / ${GOAL}`; running = true; t0 = performance.now(); spawn(); tick(); }
+      function stop() { running = false; cancelAnimationFrame(raf); clearTimeout(moveTimer); }
+      cover(stage, "Ready?", "15 hits · 30 seconds", "Start", start);
+      return stop;
+    },
+
+    /* ---- catch the hearts ---- */
+    catch(body, win) {
+      const hud = document.createElement("div"); hud.className = "hud";
+      hud.innerHTML = `<span id="cScore">0 / 15</span><span id="cLives">♥ ♥ ♥</span>`;
+      const stage = document.createElement("div"); stage.className = "stage"; stage.style.cursor = "none";
+      const cv = document.createElement("canvas"); stage.appendChild(cv);
+      body.append(hud, stage);
+      const ctx = cv.getContext("2d");
+      const dpr = window.devicePixelRatio || 1;
+      let W, H; function size() { W = stage.clientWidth; H = stage.clientHeight; cv.width = W * dpr; cv.height = H * dpr; ctx.setTransform(dpr, 0, 0, dpr, 0, 0); }
+      size();
+      let bx = W / 2, items = [], score = 0, lives = 3, raf = 0, last = 0, spawnT = 0, running = false;
+      const GOAL = 15;
+      stage.addEventListener("mousemove", e => { const r = stage.getBoundingClientRect(); bx = e.clientX - r.left; });
+      stage.addEventListener("touchmove", e => { const r = stage.getBoundingClientRect(); bx = e.touches[0].clientX - r.left; }, { passive: true });
+      function drawHeart(x, y, s, col, broken) {
+        ctx.save(); ctx.translate(x, y); ctx.scale(s, s);
+        ctx.fillStyle = col; ctx.fill(new Path2D(heartPath));
+        if (broken) { ctx.strokeStyle = "#0d1510"; ctx.lineWidth = 1.8; ctx.beginPath(); ctx.moveTo(0, -9); ctx.lineTo(-2, -4); ctx.lineTo(2, -1); ctx.lineTo(-1, 3); ctx.stroke(); }
+        ctx.restore();
+      }
+      function frame(t) {
+        const dt = Math.min(40, t - (last || t)); last = t;
+        ctx.clearRect(0, 0, W, H);
+        if (running) {
+          spawnT -= dt;
+          if (spawnT <= 0) {
+            spawnT = rand(480, 820);
+            items.push({ x: rand(20, W - 20), y: -20, v: rand(.12, .2) + score * .006, bad: Math.random() < .28, s: rand(1.4, 1.9) });
+          }
+        }
+        const by = H - 34;
+        items.forEach(it => { it.y += it.v * dt; });
+        items = items.filter(it => {
+          if (it.y > by - 8 && it.y < by + 14 && Math.abs(it.x - bx) < 44) {
+            if (it.bad) { lives--; $("#cLives").textContent = "♥ ".repeat(Math.max(0, lives)).trim() || "—"; }
+            else { score++; $("#cScore").textContent = `${score} / ${GOAL}`; }
+            return false;
+          }
+          return it.y < H + 30;
+        });
+        items.forEach(it => drawHeart(it.x, it.y, it.s, it.bad ? "#b9504a" : "#7cc38b", it.bad));
+        // basket
+        ctx.strokeStyle = "#e6e1d2"; ctx.lineWidth = 2.5; ctx.fillStyle = "#1d3a26";
+        ctx.beginPath(); ctx.moveTo(bx - 44, by); ctx.lineTo(bx + 44, by); ctx.lineTo(bx + 34, by + 24); ctx.lineTo(bx - 34, by + 24); ctx.closePath(); ctx.fill(); ctx.stroke();
+        ctx.beginPath(); ctx.moveTo(bx - 30, by + 8); ctx.lineTo(bx + 30, by + 8); ctx.moveTo(bx - 26, by + 16); ctx.lineTo(bx + 26, by + 16); ctx.globalAlpha = .4; ctx.stroke(); ctx.globalAlpha = 1;
+        if (running && score >= GOAL) { stop(); win(); return; }
+        if (running && lives <= 0) { stop(); cover(stage, "Ouch.", `${score} of ${GOAL} — one more time?`, "Try again", start); }
+        raf = requestAnimationFrame(frame);
+      }
+      function start() { items = []; score = 0; lives = 3; spawnT = 0; $("#cScore").textContent = `0 / ${GOAL}`; $("#cLives").textContent = "♥ ♥ ♥"; running = true; }
+      function stop() { running = false; }
+      raf = requestAnimationFrame(frame);
+      cover(stage, "Ready?", "catch 15 · avoid the broken ones", "Start", start);
+      return () => { running = false; cancelAnimationFrame(raf); };
+    },
+
+    /* ---- connect the stars ---- */
+    stars(body, win) {
+      const stage = document.createElement("div"); stage.className = "stage"; stage.style.background = "#0a100c";
+      const cv = document.createElement("canvas"); stage.appendChild(cv);
+      body.appendChild(stage);
+      const ctx = cv.getContext("2d"), dpr = window.devicePixelRatio || 1;
+      const W = stage.clientWidth, H = stage.clientHeight;
+      cv.width = W * dpr; cv.height = H * dpr; ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      const SHAPE = [[0,1],[-.36,.64],[-.7,.27],[-.94,-.1],[-.92,-.5],[-.66,-.82],[-.3,-.84],[0,-.52],[.3,-.84],[.66,-.82],[.92,-.5],[.94,-.1],[.7,.27],[.36,.64]];
+      const N = SHAPE.length;
+      const pts = SHAPE.map(([x, y]) => ({ x: W / 2 + x * 175 + rand(-5, 5), y: H / 2 + 8 + y * 168 + rand(-5, 5) }));
+      const dust = Array.from({ length: 90 }, () => ({ x: rand(0, W), y: rand(0, H), r: rand(.4, 1.3), a: rand(.2, .6) }));
+      let next = 0, flash = -1, finished = false, glow = 0, raf = 0;
+      function star(x, y, r, col) {
+        ctx.fillStyle = col; ctx.beginPath();
+        for (let k = 0; k < 10; k++) { const a = -Math.PI / 2 + k * Math.PI / 5, rr = k % 2 ? r * .45 : r; ctx.lineTo(x + Math.cos(a) * rr, y + Math.sin(a) * rr); }
+        ctx.closePath(); ctx.fill();
+      }
+      function draw() {
+        ctx.clearRect(0, 0, W, H);
+        dust.forEach(d => { ctx.globalAlpha = d.a; ctx.fillStyle = "#e6e1d2"; ctx.beginPath(); ctx.arc(d.x, d.y, d.r, 0, 7); ctx.fill(); });
+        ctx.globalAlpha = 1;
+        if (finished) {
+          glow = Math.min(1, glow + .02);
+          ctx.fillStyle = `rgba(124,195,139,${.22 * glow})`;
+          ctx.beginPath(); pts.forEach((p, i) => i ? ctx.lineTo(p.x, p.y) : ctx.moveTo(p.x, p.y)); ctx.closePath(); ctx.fill();
+        }
+        ctx.strokeStyle = "#7cc38b"; ctx.lineWidth = 2; ctx.beginPath();
+        for (let i = 0; i < next; i++) i ? ctx.lineTo(pts[i].x, pts[i].y) : ctx.moveTo(pts[i].x, pts[i].y);
+        if (finished) ctx.lineTo(pts[0].x, pts[0].y);
+        ctx.stroke();
+        pts.forEach((p, i) => {
+          const col = i < next ? "#7cc38b" : i === flash ? "#b9504a" : "#e6e1d2";
+          star(p.x, p.y, 9, col);
+          if (!finished) { ctx.fillStyle = "#86917f"; ctx.font = "15px 'IM Fell English', serif"; ctx.fillText(String(i + 1), p.x + 11, p.y - 9); }
+        });
+        raf = requestAnimationFrame(draw);
+      }
+      cv.addEventListener("click", e => {
+        if (finished) return;
+        const r = cv.getBoundingClientRect(); const x = e.clientX - r.left, y = e.clientY - r.top;
+        const hit = pts.findIndex(p => Math.hypot(p.x - x, p.y - y) < 18);
+        if (hit < 0) return;
+        if (hit === next) { next++; if (next === N) { finished = true; setTimeout(win, 1600); } }
+        else { flash = hit; setTimeout(() => flash = -1, 350); }
+      });
+      draw();
+      return () => cancelAnimationFrame(raf);
+    },
+  };
+
+  /* ---------------- the final question ---------------- */
+  let yesScale = 1;
+  $("#bigHeart").addEventListener("click", () => {
+    if (done.size < 6) {
+      const h = $("#bigHeart"); h.classList.remove("shake"); void h.offsetWidth; h.classList.add("shake");
+      return;
+    }
+    yesScale = 1; $("#yes").style.transform = "scale(1)";
+    $("#no").style.left = "60%"; $("#no").style.top = "58%";
+    $("#final").classList.remove("hidden");
+  });
+  const fp = $("#finalPanel"), no = $("#no"), yes = $("#yes");
+  function dodge() {
+    const pr = fp.getBoundingClientRect(), nr = no.getBoundingClientRect(), yr = yes.getBoundingClientRect();
+    let x, y, tries = 0;
+    do {
+      x = rand(20, pr.width - nr.width - 20); y = rand(130, pr.height - nr.height - 20);
+      tries++;
+    } while (tries < 40 && x + pr.left < yr.right + 30 && x + nr.width + pr.left > yr.left - 30 && y + pr.top < yr.bottom + 30 && y + nr.height + pr.top > yr.top - 30);
+    no.style.left = x + "px"; no.style.top = y + "px";
+    yesScale = Math.min(4, yesScale * 1.14);
+    yes.style.transform = `scale(${yesScale})`;
+  }
+  fp.addEventListener("mousemove", e => {
+    const r = no.getBoundingClientRect();
+    const cx = r.left + r.width / 2, cy = r.top + r.height / 2;
+    if (Math.hypot(e.clientX - cx, e.clientY - cy) < 85) dodge();
+  });
+  no.addEventListener("mouseenter", dodge);
+  no.addEventListener("click", e => { e.preventDefault(); dodge(); });
+  no.addEventListener("touchstart", e => { e.preventDefault(); dodge(); }, { passive: false });
+
+  yes.addEventListener("click", () => {
+    const y = document.createElement("div"); y.className = "yay";
+    y.innerHTML = `<div class="big">Yay!!</div><p>I love you too, Pia.</p><p style="color:var(--muted);font-style:italic;font-size:18px">You passed every trial. Of course you did.</p><div class="sig">— Your demon 鬼</div>`;
+    fp.appendChild(y);
+    rain();
+  });
+  function rain() {
+    const cols = ["#7cc38b", "#3c7a4d", "#a9dbb2", "#e6e1d2", "#5fae73"];
+    for (let i = 0; i < 90; i++) {
+      setTimeout(() => {
+        const h = document.createElement("div"); h.className = "fall";
+        const s = rand(14, 34);
+        h.style.left = rand(0, 100) + "vw";
+        h.style.setProperty("--r", rand(-200, 200) + "deg");
+        h.style.animationDuration = rand(2.6, 5) + "s";
+        h.innerHTML = `<svg width="${s}" height="${s}" viewBox="-14 -14 28 26"><path d="${heartPath}" fill="${cols[i % cols.length]}"/></svg>`;
+        document.body.appendChild(h);
+        setTimeout(() => h.remove(), 5200);
+      }, i * 45);
+    }
+  }
+
+  buildMain();
+})();
+</script>
+</body>
+</html>
